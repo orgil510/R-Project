@@ -1,0 +1,70 @@
+---
+title: "ClassSizeProject"
+author: "Orgil Batbold"
+date: "3/14/2021"
+output: html_document
+---
+
+```{r}
+#Load Data
+load("ARE106_HW5_maimonides_rule.Rdata")
+
+```
+
+```{r}
+library(AER)        # Applied Econometrics with R
+library(stargazer)  # (Optional) Regression Tables
+```
+
+
+```{r}
+#Model 1 
+ols1 <- lm(log(avgread) ~ log(classize), D) 
+summary(ols1)
+
+```
+```{r}
+#Model 2
+ols2 <- lm(log(avgread) ~ log(classize) + (pct_dis), D) 
+summary(ols2)
+```
+
+```{r}
+#Question 3.4 
+plot(y = D$classize,x = D$m_rule , main = "m_rule to class size", xlab = "m_rule", ylab = "classize", abline(lm(classize ~ m_rule, D)))
+
+
+```
+
+```{r}
+#Question 4.1 First stage regression using OLS 
+first.stage <- lm((log(classize) ~ log(m_rule) + pct_dis),D)
+summary(first.stage)
+
+```
+```{r}
+#Question 4.2 Model 2 using 2sls
+#Second stage
+class_pred <- fitted(first.stage)
+iv <- lm((log(avgread) ~ class_pred + pct_dis), D)
+
+```
+
+
+```{r}
+#compare 2sls estimate from method 1 using ols 
+stargazer(ols2, iv, type = "text")
+
+```
+```{r}
+#AER Method
+iv2 <- ivreg(log(avgread) ~ log(classize) + pct_dis | pct_dis + log(m_rule), data = D)
+
+```
+
+```{r}
+#Compare 2sls estimates from method 1 and method 2 to ols estimates 
+stargazer(ols2, iv, iv2, type = "text")
+
+```
+
